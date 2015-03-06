@@ -20,23 +20,24 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class PrecompilationTest
     {
         private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(1);
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(PrecompilationWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task PrecompiledView_RendersCorrectly()
         {
             // Arrange
-            var applicationEnvironment = _services.GetRequiredService<IApplicationEnvironment>();
+            IServiceCollection serviceCollection = null;
+            var server = TestServer.Create(_app, services => { AddServices(services); serviceCollection = services; });
+            var client = server.CreateClient();
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var applicationEnvironment = serviceProvider.GetRequiredService<IApplicationEnvironment>();
 
             var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath, "Views", "Home");
             var layoutContent = File.ReadAllText(Path.Combine(viewsDirectory, "Layout.cshtml"));
             var indexContent = File.ReadAllText(Path.Combine(viewsDirectory, "Index.cshtml"));
             var viewstartContent = File.ReadAllText(Path.Combine(viewsDirectory, "_ViewStart.cshtml"));
             var globalContent = File.ReadAllText(Path.Combine(viewsDirectory, "_GlobalImport.cshtml"));
-
-            var server = TestServer.Create(_services, _app);
-            var client = server.CreateClient();
 
             // We will render a view that writes the fully qualified name of the Assembly containing the type of
             // the view. If the view is precompiled, this assembly will be PrecompilationWebsite.
@@ -169,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 @"Value set inside ASPNETCORE50 " + assemblyNamePrefix;
 #endif
 
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -185,10 +186,12 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expected = GetAssemblyNamePrefix();
-            var server = TestServer.Create(_services, _app);
+            IServiceCollection serviceCollection = null;
+            var server = TestServer.Create(_app, services => { AddServices(services); serviceCollection = services; });
             var client = server.CreateClient();
 
-            var applicationEnvironment = _services.GetRequiredService<IApplicationEnvironment>();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var applicationEnvironment = serviceProvider.GetRequiredService<IApplicationEnvironment>();
 
             var viewsDirectory = Path.Combine(applicationEnvironment.ApplicationBasePath,
                                               "Views",
@@ -226,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expected = @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
                 @"data-val-range-min=""10"" id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -244,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
             var expected = @"<root>root-content</root>";
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -272,6 +275,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             return path;
         }
 
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(PrecompilationWebSite));
+        }
+
         private sealed class ParsedResponse
         {
             public ParsedResponse(string responseContent)
@@ -297,6 +305,5 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             public string Index { get; }
         }
-
     }
 }

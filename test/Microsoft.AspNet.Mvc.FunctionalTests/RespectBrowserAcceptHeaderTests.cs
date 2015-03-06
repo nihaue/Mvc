@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RespectBrowserAcceptHeaderTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(FormatterWebSite));
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         [Theory]
@@ -24,10 +24,10 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_FirstFormatterInListWritesResponse(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
-            
+
             // Act
             var response = await client.GetAsync("http://localhost/RespectBrowserAcceptHeader/EmployeeInfo");
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_ProducesAttributeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
             var expectedResponseData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
@@ -71,13 +71,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
             var requestData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
                               " xmlns=\"http://schemas.datacontract.org/2004/07/FormatterWebSite.Controllers\"><Id>35</Id><Name>Jimmy" +
                               "</Name></RespectBrowserAcceptHeaderController.Employee>";
-            
+
             // Act
             var response = await client.PostAsync("http://localhost/RespectBrowserAcceptHeader/CreateEmployee",
                                                     new StringContent(requestData, Encoding.UTF8, "application/xml"));
@@ -89,6 +89,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("application/xml; charset=utf-8", response.Content.Headers.ContentType.ToString());
             var responseData = await response.Content.ReadAsStringAsync();
             Assert.Equal(requestData, responseData);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(FormatterWebSite));
         }
     }
 }

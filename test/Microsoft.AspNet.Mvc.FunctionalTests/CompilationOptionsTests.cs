@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using RazorWebSite;
 using Xunit;
 
@@ -15,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // precompiled and dynamically compiled views.
     public class CompilationOptionsTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(RazorWebSite));
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -33,7 +32,7 @@ This method is only defined in ASPNET50";
 
 This method is only defined in ASPNETCORE50";
 #endif
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -41,6 +40,11 @@ This method is only defined in ASPNETCORE50";
 
             // Assert
             Assert.Equal(expected, body.Trim());
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(RazorWebSite));
         }
     }
 }

@@ -2,30 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using ActionResultsWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ActionResultTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ActionResultsWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
-                
+
         [Fact]
         public async Task BadRequestResult_CanBeReturned()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
 
@@ -47,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsRelativePathInLocationHeader()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -67,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsAbsolutePathInLocationHeader()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -87,7 +85,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsQualifiedPathInLocationHeader()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -109,7 +107,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedResult_SetsUriInLocationHeader()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -129,7 +127,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtActionResult_GeneratesUri_WithActionAndController()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -149,7 +147,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtRouteResult_GeneratesUri_WithRouteValues()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -169,7 +167,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CreatedAtRouteResult_GeneratesUri_WithRouteName()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -189,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SerializableError_CanSerializeNormalObjects()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -212,7 +210,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsDefaultContentTypeAndEncoding()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -232,7 +230,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsContentTypeWithDefaultEncoding()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -252,7 +250,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ContentResult_WritesContent_SetsContentTypeAndEncoding()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Post,
@@ -272,7 +270,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ObjectResult_WithStatusCodeAndNoContent_SetsSameStatusCode()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                             HttpMethod.Get,
@@ -289,7 +287,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HttpNotFoundObjectResult_NoResponseContent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -308,7 +306,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HttpNotFoundObjectResult_WithResponseContent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var input = "{\"SampleInt\":10}";
 
@@ -323,6 +321,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Equal("{\"SampleInt\":10,\"SampleString\":\"Foo\"}", await response.Content.ReadAsStringAsync());
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, "ActionResultsWebSite");
         }
     }
 }

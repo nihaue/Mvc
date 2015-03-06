@@ -4,13 +4,13 @@
 using System;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class MvcStartupTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("AddServicesWebSite");
         private readonly Action<IApplicationBuilder> _app = new AddServicesWebSite.Startup().Configure;
 
         [Fact]
@@ -22,8 +22,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 "or 'IApplicationBuilder.UseMvc(...)' in the application startup code.";
 
             // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => TestServer.Create(_provider, _app));
+            var ex = Assert.Throws<InvalidOperationException>(() => TestServer.Create(_app, AddServices));
             Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(AddServicesWebSite));
         }
     }
 }

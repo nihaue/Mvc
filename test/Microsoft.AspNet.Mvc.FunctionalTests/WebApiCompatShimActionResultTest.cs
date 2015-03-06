@@ -6,20 +6,20 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class WebApiCompatShimActionResultTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(WebApiCompatShimWebSite));
         private readonly Action<IApplicationBuilder> _app = new WebApiCompatShimWebSite.Startup().Configure;
 
         [Fact]
         public async Task ApiController_BadRequest()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -33,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_BadRequestMessage()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_BadRequestModelState()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var expected = "{\"Message\":\"The request is invalid.\",\"ModelState\":{\"product.Name\":[\"Name is required.\"]}}";
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Conflict()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -81,7 +81,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Content()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -97,7 +97,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreatedRelative()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -114,7 +114,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreatedAbsolute()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -131,7 +131,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreatedQualified()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreatedUri()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -165,7 +165,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_CreatedAtRoute()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -182,7 +182,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_InternalServerError()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -196,7 +196,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_InternalServerErrorException()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -212,7 +212,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Json()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -228,7 +228,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_JsonSettings()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var expected =
@@ -249,7 +249,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_JsonSettingsEncoding()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var expected =
@@ -271,7 +271,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_NotFound()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -285,7 +285,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_Ok()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -299,7 +299,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_OkContent()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -315,7 +315,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RedirectString()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -330,7 +330,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_RedirectUri()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -345,7 +345,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_ResponseMessage()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -360,7 +360,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ApiController_StatusCode()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -368,6 +368,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.PaymentRequired, response.StatusCode);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(WebApiCompatShimWebSite));
         }
     }
 }

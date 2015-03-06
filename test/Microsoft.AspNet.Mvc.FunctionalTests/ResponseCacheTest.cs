@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using ResponseCacheWebSite;
 using Xunit;
 
@@ -13,14 +14,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ResponseCacheTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("ResponseCacheWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task ResponseCache_SetsAllHeaders()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_SetsDifferentCacheControlHeaders(string url, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SetsHeadersForAllActionsOfClass()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HeadersSetInActionOverridesTheOnesInClass()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HeadersToNotCacheAParticularAction()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ClassLevelHeadersAreUnsetByActionLevelHeaders()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -137,7 +137,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task SetsCacheControlPublicByDefault()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -152,7 +152,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ThrowsWhenDurationIsNotSet()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act & Assert
@@ -168,7 +168,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_SetsAllHeaders_FromCacheProfile()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_SetsAllHeaders_ChosesTheRightProfile()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -198,7 +198,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_SetsNoCacheHeaders()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -215,7 +215,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_AddsHeaders()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -232,7 +232,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCache_ModifiesHeaders()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ResponseCacheAttribute_OnAction_OverridesTheValuesOnClass()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -261,6 +261,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             IEnumerable<string> pragmaValues;
             response.Headers.TryGetValues("Pragma", out pragmaValues);
             Assert.Null(pragmaValues);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(ResponseCacheWebSite));
         }
     }
 }

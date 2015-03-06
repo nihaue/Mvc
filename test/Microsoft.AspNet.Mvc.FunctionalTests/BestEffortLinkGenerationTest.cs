@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -14,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
     public class BestEffortLinkGenerationTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(BestEffortLinkGenerationWebSite));
         private readonly Action<IApplicationBuilder> _app = new BestEffortLinkGenerationWebSite.Startup().Configure;
 
         private const string ExpectedOutput = @"<html>
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GenerateLink_NonExistentAction()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Home/Index";
@@ -40,5 +40,9 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(ExpectedOutput, content);
         }
 
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(BestEffortLinkGenerationWebSite));
+        }
     }
 }

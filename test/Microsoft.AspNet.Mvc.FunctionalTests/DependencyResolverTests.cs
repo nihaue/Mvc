@@ -3,11 +3,11 @@
 
 #if ASPNET50
 using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using AutofacWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -20,18 +20,22 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AutofacDIContainerCanUseMvc(string url, string expectedResponseBody)
         {
             // Arrange
-            var provider = TestHelper.CreateServices("AutofacWebSite");
             Action<IApplicationBuilder> app = new Startup().Configure;
 
             // Act & Assert (does not throw)
             // This essentially calls into the Startup.Configuration method
-            var server = TestServer.Create(provider, app);
+            var server = TestServer.Create(app, AddServices);
 
             // Make a request to start resolving DI pieces
             var response = await server.CreateClient().GetAsync(url);
 
             var actualResponseBody = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedResponseBody, actualResponseBody);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(AutofacWebSite));
         }
     }
 }

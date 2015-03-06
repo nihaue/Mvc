@@ -7,13 +7,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class JsonResultTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(BasicWebSite));
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
 
         [Theory]
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_Conneg(string mediaType)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/Plain";
@@ -48,7 +48,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_Conneg_Fails(string mediaType)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/Plain";
@@ -71,7 +71,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_Null()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/Null";
@@ -93,7 +93,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_String()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/String";
@@ -116,7 +116,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_CustomFormatter_Conneg(string mediaType)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/CustomFormatter";
@@ -142,7 +142,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_CustomFormatter_Conneg_Fails(string mediaType)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/CustomFormatter";
@@ -164,7 +164,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonResult_CustomContentType()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/JsonResult/CustomContentType";
@@ -179,6 +179,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("application/message+json", response.Content.Headers.ContentType.MediaType);
             Assert.Equal("{\"Message\":\"hello\"}", content);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(BasicWebSite));
         }
     }
 }

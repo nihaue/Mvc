@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using RazorWebSite;
 using Xunit;
 
@@ -14,7 +15,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ViewEngineTests
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices("RazorWebSite");
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         public static IEnumerable<object[]> RazorView_ExecutesPageAndLayoutData
@@ -63,7 +63,7 @@ ViewWithNestedLayout-Content
         [MemberData(nameof(RazorView_ExecutesPageAndLayoutData))]
         public async Task RazorView_ExecutesPageAndLayout(string actionName, string expected)
         {
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -84,7 +84,7 @@ ViewWithNestedLayout-Content
                                        "",
                                        "</partial2>",
                                        "test-value");
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -99,7 +99,7 @@ ViewWithNestedLayout-Content
         {
             // Arrange
             var expected = "HelloWorld";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -118,7 +118,7 @@ ViewWithNestedLayout-Content
 
 partial-content
 component-content";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -154,7 +154,7 @@ component-content";
         public async Task RazorViewEngine_UsesViewExpandersForViewsAndPartials(string value, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -182,7 +182,7 @@ component-content";
         public async Task ViewLocationExpanders_PassesInIsPartialToViewLocationExpanderContext(string action, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -247,7 +247,7 @@ ViewWithNestedLayout-Content
         public async Task RazorViewEngine_RendersPartialViews(string actionName, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -266,7 +266,7 @@ ViewWithNestedLayout-Content
                                        "",
                                        "~/Views/NestedViewStarts/NestedViewStarts/Layout.cshtml",
                                        "index-content");
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -302,7 +302,7 @@ View With Layout
         public async Task RazorViewEngine_UsesExpandersForLayouts(string value, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -320,7 +320,7 @@ View With Layout
             var expected = 
 @"<view-start>Hello Controller-Person</view-start>
 <page>Hello Controller-Person</page>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var target = "http://localhost/NestedGlobalImports";
 
@@ -342,7 +342,7 @@ Page Content
 <component-title>ViewComponent With Title</component-title>
 <component-body>
 Component With Layout</component-body>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -357,7 +357,7 @@ Component With Layout</component-body>";
         {
             // Arrange
             var expected = @"<page-content>ViewComponent With ViewStart</page-content>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -372,7 +372,7 @@ Component With Layout</component-body>";
         {
             // Arrange
             var expected = "Partial that does not specify Layout";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -391,7 +391,7 @@ Component With Layout</component-body>";
 Partial that specifies Layout
 </layout-for-viewstart-with-layout>Partial that does not specify Layout
 </layout-for-viewstart-with-layout>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -411,7 +411,7 @@ Partial that specifies Layout
 </layout-for-viewstart-with-layout>
 Partial that does not specify Layout
 </layout-for-viewstart-with-layout>";
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -427,7 +427,7 @@ Partial that does not specify Layout
             // Arrange
             var expected = await GetType().GetTypeInfo().Assembly
                 .ReadResourceAsStringAsync("compiler/resources/ViewEngineController.ViewWithPaths.txt");
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -435,6 +435,11 @@ Partial that does not specify Layout
 
             // Assert
             Assert.Equal(expected, body.Trim());
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(RazorWebSite));
         }
     }
 }

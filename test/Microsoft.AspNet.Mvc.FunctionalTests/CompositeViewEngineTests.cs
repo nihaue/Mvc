@@ -5,20 +5,20 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CompositeViewEngineTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(CompositeViewEngineWebSite));
         private readonly Action<IApplicationBuilder> _app = new CompositeViewEngineWebSite.Startup().Configure;
 
         [Fact]
         public async Task CompositeViewEngine_FindsPartialViewsAcrossAllEngines()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -32,7 +32,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CompositeViewEngine_FindsViewsAcrossAllEngines()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -40,6 +40,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal("Content from test view", body.Trim());
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(CompositeViewEngineWebSite));
         }
     }
 }

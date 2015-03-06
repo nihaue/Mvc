@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -15,7 +16,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // PER-REQUEST and does not linger around to impact the next request.
     public class RequestServicesTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(RequestServicesWebSite));
         private readonly Action<IApplicationBuilder> _app = new RequestServicesWebSite.Startup().Configure;
 
         [Theory]
@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices(string url)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act & Assert
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_TagHelper()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromTagHelper";
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RequestServices_ActionConstraint()
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var url = "http://localhost/Other/FromActionConstraint";
@@ -95,6 +95,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var response2 = await client.SendAsync(request2);
             Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(RequestServicesWebSite));
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -16,14 +17,13 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class TryValidateModelTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(ValidationWebSite));
         private readonly Action<IApplicationBuilder> _app = new ValidationWebSite.Startup().Configure;
 
         [Fact]
         public async Task TryValidateModel_ClearParameterValidationError_ReturnsErrorsForInvalidProperties()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var input = "{ \"Price\": 2, \"Contact\": \"acvrdzersaererererfdsfdsfdsfsdf\", "+
                 "\"ProductDetails\": {\"Detail1\": \"d1\", \"Detail2\": \"d2\", \"Detail3\": \"d3\"}}";
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_InvalidTypeOnDerivedModel_ReturnsErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var url =
                 "http://localhost/ModelMetadataTypeValidation/TryValidateModelSoftwareViewModelWithPrefix";
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TryValidateModel_ValidDerivedModel_ReturnsEmptyResponseBody()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var url =
                 "http://localhost/ModelMetadataTypeValidation/TryValidateModelValidModelNoPrefix";
@@ -86,6 +86,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal("{}", body);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(ValidationWebSite));
         }
     }
 }

@@ -2,20 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
-using Newtonsoft.Json;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CustomRouteTest
     {
-        private readonly IServiceProvider _provider = TestHelper.CreateServices(nameof(CustomRouteWebSite));
         private readonly Action<IApplicationBuilder> _app = new CustomRouteWebSite.Startup().Configure;
 
         [Theory]
@@ -25,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteToLocale_ConventionalRoute_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Products/Index");
@@ -47,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteWithAttributeRoute_IncludesLocale_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_provider, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Orders/5");
@@ -60,6 +58,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, content);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(CustomRouteWebSite));
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -13,7 +14,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     public class RoutingLowercaseUrlTest
     {
         // This website sets the generation of lowercase URLs to true
-        private readonly IServiceProvider _services = TestHelper.CreateServices("LowercaseUrlsWebSite");
         private readonly Action<IApplicationBuilder> _app = new LowercaseUrlsWebSite.Startup().Configure;
 
         [Theory]
@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GenerateLowerCaseUrlsTests(string path, string expectedUrl)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             // Act
@@ -45,6 +45,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedUrl, body);
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(LowercaseUrlsWebSite));
         }
     }
 }

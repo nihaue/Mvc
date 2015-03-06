@@ -12,6 +12,7 @@ using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Filters;
 using Microsoft.AspNet.Mvc.Logging;
 using Microsoft.AspNet.TestHost;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -19,7 +20,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class LoggingStartupTest
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices(nameof(LoggingWebSite));
         private readonly Action<IApplicationBuilder> _app = new LoggingWebSite.Startup().Configure;
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
         private async Task<IEnumerable<LogInfoDto>> GetLogsByDataTypeAsync<T>()
         {
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
 
             var response = await client.GetStringAsync("http://localhost/logs");
@@ -98,6 +98,11 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var logs = activityDtos.FilterByStartup().GetLogsByDataType<T>();
 
             return logs;
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(LoggingWebSite));
         }
     }
 }

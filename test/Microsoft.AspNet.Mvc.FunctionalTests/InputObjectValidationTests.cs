@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.TestHost;
 using Microsoft.AspNet.WebUtilities;
+using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -18,7 +19,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class InputObjectValidationTests
     {
-        private readonly IServiceProvider _services = TestHelper.CreateServices("FormatterWebSite");
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         // Parameters: Request Content, Expected status code, Expected model state error message
@@ -47,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserializedWithoutErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var sampleId = 2;
             var sampleName = "SampleUser";
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfObjectIsDeserialized_WithErrors()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var sampleId = 0;
             var sampleName = "user";
@@ -101,7 +101,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedFieldsAreNotValidated()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var content = new StringContent("{\"Alias\":\"xyz\"}", Encoding.UTF8, "application/json");
 
@@ -118,7 +118,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ShallowValidation_HappensOnExcluded_ComplexTypeProperties()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var requestData = "{\"Name\":\"Library Manager\", \"Suppliers\": [{\"Name\":\"Contoso Corp\"}]}";
             var content = new StringContent(requestData, Encoding.UTF8, "application/json");
@@ -151,7 +151,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                                                             string expectedModelStateErrorMessage)
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var content = new StringContent(requestContent, Encoding.UTF8, "application/json");
 
@@ -173,18 +173,23 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CheckIfExcludedField_IsValidatedForNonBodyBoundModels()
         {
             // Arrange
-            var server = TestServer.Create(_services, _app);
+            var server = TestServer.Create(_app, AddServices);
             var client = server.CreateClient();
             var kvps = new List<KeyValuePair<string, string>>();
             kvps.Add(new KeyValuePair<string, string>("Alias", "xyz"));
             var content = new FormUrlEncodedContent(kvps);
-            
+
             // Act
             var response = await client.PostAsync("http://localhost/Validation/GetDeveloperAlias", content);
 
             //Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("The Name field is required.", await response.Content.ReadAsStringAsync());
+        }
+
+        private static void AddServices(IServiceCollection services)
+        {
+            TestHelper.AddServices(services, nameof(FormatterWebSite));
         }
 
         private class ErrorCollection
