@@ -7,14 +7,13 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using ConnegWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class OutputFormatterTest
     {
+        private const string SiteName = nameof(ConnegWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]
@@ -25,7 +24,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task StringOutputFormatter_ForStringValues_GetsSelectedReturnsTextPlainContentType(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("text/plain;charset=utf-8");
             var expectedBody = actionName;
@@ -45,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonOutputFormatter_ForNonStringValue_GetsSelected(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedContentType = MediaTypeHeaderValue.Parse("application/json;charset=utf-8");
 
@@ -62,7 +61,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoContentFormatter_ForVoidAndTaskReturnType_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -84,7 +83,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoContentFormatter_ForNullValue_ByDefault_GetsSelectedAndWritesResponse(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -107,7 +106,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             NoContentFormatter_ForNullValue_AndTreatNullAsNoContentFlagSetToFalse_DoesNotGetSelected(string actionName)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -120,11 +119,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Response body is empty instead of null.
             Assert.Empty(body);
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(ConnegWebSite));
         }
     }
 }

@@ -7,8 +7,6 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Xunit;
 
@@ -16,6 +14,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class TagHelperSampleTest
     {
+        private const string SiteName = nameof(TagHelperSample) + "." + nameof(TagHelperSample.Web);
+
         // Path relative to Mvc\\test\Microsoft.AspNet.Mvc.FunctionalTests
         private readonly static string SamplesFolder = Path.Combine("..", "..", "samples");
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Home_Pages_ReturnSuccess()
         {
             // Arrange
-            var server = TestServer.Create(app => _app(app, _loggerFactory), AddServices);
+            var server = TestHelper.CreateServer(app => _app(app, _loggerFactory), SiteName, SamplesFolder);
             var client = server.CreateClient();
 
             for (var index = 0; index < Paths.Count; index++)
@@ -56,14 +56,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Assert.NotNull(response);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(
-                services,
-                nameof(TagHelperSample) + "." + nameof(TagHelperSample.Web),
-                SamplesFolder);
         }
 
         private class TestLoggerFactory : ILoggerFactory

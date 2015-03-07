@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Mvc
             services.AddSingleton<IMemoryCache, MemoryCache>();
 
             // DefaultHtmlGenerator is pretty much stateless but depends on Scoped services such as IUrlHelper and
-            // IActionBindingContextProvider. Therefore it too is scoped.yield return describe.Transient
+            // IActionBindingContextProvider. Therefore it too is scoped.
             services.AddTransient<IHtmlGenerator, DefaultHtmlGenerator>();
 
             // These do caching so they should stay singleton

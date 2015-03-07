@@ -9,7 +9,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Razor;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Runtime;
 using PrecompilationWebSite;
@@ -19,6 +18,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class PrecompilationTest
     {
+        private const string SiteName = nameof(PrecompilationWebSite);
         private static readonly TimeSpan _cacheDelayInterval = TimeSpan.FromSeconds(1);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             IServiceCollection serviceCollection = null;
-            var server = TestServer.Create(_app, services => { AddServices(services); serviceCollection = services; });
+            var server = TestHelper.CreateServer(_app, SiteName, services => serviceCollection = services);
             var client = server.CreateClient();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -170,7 +170,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 @"Value set inside ASPNETCORE50 " + assemblyNamePrefix;
 #endif
 
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -187,7 +187,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var expected = GetAssemblyNamePrefix();
             IServiceCollection serviceCollection = null;
-            var server = TestServer.Create(_app, services => { AddServices(services); serviceCollection = services; });
+            var server = TestHelper.CreateServer(_app, SiteName, services => serviceCollection = services);
             var client = server.CreateClient();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -229,7 +229,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var expected = @"<root data-root=""true""><input class=""form-control"" type=""number"" data-val=""true""" +
                 @" data-val-range=""The field Age must be between 10 and 100."" data-val-range-max=""100"" "+
                 @"data-val-range-min=""10"" id=""Age"" name=""Age"" value="""" /><a href="""">Back to List</a></root>";
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -247,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Arrange
             var assemblyNamePrefix = GetAssemblyNamePrefix();
             var expected = @"<root>root-content</root>";
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -273,11 +273,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             await Task.Delay(_cacheDelayInterval);
 
             return path;
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(PrecompilationWebSite));
         }
 
         private sealed class ParsedResponse

@@ -5,8 +5,6 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using RazorCompilerCacheWebSite;
 using Xunit;
 
@@ -14,13 +12,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RazorCompilerCacheTest
     {
+        private const string SiteName = nameof(RazorCompilerCacheWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task CompilerCache_IsNotInitializedUntilFirstViewRequest()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.BaseAddress = new Uri("http://localhost");
 
@@ -43,11 +42,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert - 2
             Assert.Equal("Hello from view!", result4);
             Assert.Equal(bool.TrueString, result5);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(RazorCompilerCacheWebSite));
         }
     }
 }

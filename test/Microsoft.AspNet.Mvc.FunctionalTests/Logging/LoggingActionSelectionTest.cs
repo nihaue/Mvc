@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 using LoggingWebSite;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Logging;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -20,13 +18,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class LoggingActionSelectionTest
     {
-        private readonly Action<IApplicationBuilder> _app = new LoggingWebSite.Startup().Configure;
+        private const string SiteName = nameof(LoggingWebSite);
+        private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task Successful_ActionSelection_Logged()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var requestTraceId = Guid.NewGuid().ToString();
 
@@ -61,7 +60,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Failed_ActionSelection_Logged()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var requestTraceId = Guid.NewGuid().ToString();
 
@@ -94,12 +93,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var responseData = await client.GetStringAsync("http://localhost/logs");
             var logActivities = JsonConvert.DeserializeObject<List<ActivityContextDto>>(responseData);
             return logActivities.FilterByRequestTraceId(requestTraceId);
-        }
-
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(LoggingWebSite));
         }
     }
 }

@@ -10,8 +10,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using BasicWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -19,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class BasicTests
     {
+        private const string SiteName = nameof(BasicWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         // Some tests require comparing the actual response body against an expected response baseline
@@ -34,7 +33,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRender_ViewsWithLayout(string url)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
 
@@ -58,7 +57,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanRender_SimpleViews()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedContent = await _resourcesAssembly.ReadResourceAsStringAsync("compiler/resources/BasicWebSite.Home.PlainView.html");
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
@@ -78,7 +77,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CanReturn_ResultsWithoutContent()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -96,7 +95,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ReturningTaskFromAction_ProducesNoContentResult()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionDescriptors_CreatedOncePerRequest()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var expectedContent = "1";
@@ -131,7 +130,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionWithRequireHttps_RedirectsToSecureUrl_ForNonHttpsGetRequests()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -151,7 +150,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionWithRequireHttps_ReturnsBadRequestResponse_ForNonHttpsNonGetRequests()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -173,7 +172,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionWithRequireHttps_AllowsHttpsRequests(string method)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
 
             // Act
@@ -189,7 +188,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task JsonViewComponent_RendersJson()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
             var expectedBody = JsonConvert.SerializeObject(new BasicWebSite.Models.Person()
             {
@@ -248,7 +247,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task HtmlHelperLinkGeneration(string viewName, string expectedLink)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
 
             // Act
@@ -264,7 +263,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ConfigureMvcOptionsAddsOptionsProperly()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
 
             // Act
@@ -280,7 +279,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TypesWithoutControllerSuffix_DerivingFromTypesWithControllerSuffix_CanBeAccessed()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
 
             // Act
@@ -294,7 +293,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task TypesMarkedAsNonAction_AreInaccessible()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = new HttpClient(server.CreateHandler(), false);
 
             // Act
@@ -302,11 +301,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(BasicWebSite));
         }
     }
 }

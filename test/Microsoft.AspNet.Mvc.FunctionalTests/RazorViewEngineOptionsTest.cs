@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using RazorViewEngineOptionsWebsite;
 using Xunit;
 
@@ -13,6 +11,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RazorViewEngineOptionsTest
     {
+        private const string SiteName = nameof(RazorViewEngineOptionsWebsite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -20,7 +19,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Hello test-user, this is /RazorViewEngineOptions_Home";
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -35,7 +34,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var expectedMessage = "Hello admin-user, this is /Restricted/RazorViewEngineOptions_Admin/Login";
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var target = "http://localhost/Restricted/RazorViewEngineOptions_Admin/Login?AdminUser=admin-user";
 
@@ -44,11 +43,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(expectedMessage, response);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(RazorViewEngineOptionsWebsite));
         }
     }
 }

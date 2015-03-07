@@ -6,14 +6,13 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class CustomRouteTest
     {
+        private const string SiteName = nameof(CustomRouteWebSite);
         private readonly Action<IApplicationBuilder> _app = new CustomRouteWebSite.Startup().Configure;
 
         [Theory]
@@ -23,7 +22,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteToLocale_ConventionalRoute_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Products/Index");
@@ -45,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task RouteWithAttributeRoute_IncludesLocale_BasedOnUser(string user, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/CustomRoute_Orders/5");
@@ -58,11 +57,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, content);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(CustomRouteWebSite));
         }
     }
 }

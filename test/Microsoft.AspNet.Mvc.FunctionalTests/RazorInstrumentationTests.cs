@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using RazorInstrumentationWebSite;
 using Xunit;
@@ -14,6 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RazorInstrumentationTests
     {
+        private const string SiteName = nameof(RazorInstrumentationWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         public static IEnumerable<object[]> InstrumentationData
@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var server = TestServer.Create(_app, services => AddServicesWithPageExecutionContext(services, context));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act
@@ -120,7 +120,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var context = new TestPageExecutionContext();
-            var server = TestServer.Create(_app, services => AddServicesWithPageExecutionContext(services, context));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("ENABLE-RAZOR-INSTRUMENTATION", "true");
 
@@ -141,7 +141,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange - 1
             var context = new TestPageExecutionContext();
-            var server = TestServer.Create(_app, services => AddServicesWithPageExecutionContext(services, context));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act - 1
@@ -183,7 +183,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
                 Tuple.Create(35, 8, true),
             };
             var context = new TestPageExecutionContext();
-            var server = TestServer.Create(_app, services => AddServicesWithPageExecutionContext(services, context));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(context));
             var client = server.CreateClient();
 
             // Act - 1
@@ -200,19 +200,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 
             // Assert - 2
             Assert.Equal(expectedLineMappings, context.Values);
-        }
-
-        private static void AddServicesWithPageExecutionContext(
-            IServiceCollection services,
-            TestPageExecutionContext pageExecutionContext)
-        {
-            AddServices(services);
-            services.AddInstance(pageExecutionContext);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(RazorInstrumentationWebSite));
         }
     }
 }

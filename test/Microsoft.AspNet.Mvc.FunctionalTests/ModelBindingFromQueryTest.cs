@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using ModelBindingWebSite;
 using ModelBindingWebSite.Controllers;
 using ModelBindingWebSite.Models;
@@ -16,13 +14,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ModelBindingFromQueryTest
     {
+        private const string SiteName = nameof(ModelBindingWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FromQuery_CustomModelPrefix_ForParameter()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // [FromQuery(Name = "customPrefix")] is used to apply a prefix
@@ -44,7 +43,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForCollectionParameter()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url =
@@ -65,7 +64,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForProperty()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // [FromQuery(Name = "EmployeeId")] is used to apply a prefix
@@ -88,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_CustomModelPrefix_ForCollectionProperty()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url =
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FromQuery_NonExistingValueAddsValidationErrors_OnProperty_UsingCustomModelPrefix()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var url =
@@ -126,11 +125,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<Result>(body);
             var error = Assert.Single(result.ModelStateErrors);
             Assert.Equal("TestEmployees[0].EmployeeId", error);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(ModelBindingWebSite));
         }
     }
 }

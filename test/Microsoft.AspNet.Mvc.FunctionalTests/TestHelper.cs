@@ -4,7 +4,9 @@
 using System;
 using System.IO;
 using System.Reflection;
+using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Hosting;
+using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.Runtime;
@@ -17,18 +19,59 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         // Path from Mvc\\test\\Microsoft.AspNet.Mvc.FunctionalTests
         private static readonly string WebsitesDirectoryPath = Path.Combine("..", "WebSites");
 
-        public static void AddServices(IServiceCollection services, string applicationWebSiteName)
+        public static TestServer CreateServer(Action<IApplicationBuilder> builder, string applicationWebSiteName)
         {
-            AddServices(services, applicationWebSiteName, WebsitesDirectoryPath);
+            return CreateServer(builder, applicationWebSiteName, applicationPath: null);
         }
 
-        public static void AddServices(
+        public static TestServer CreateServer(
+            Action<IApplicationBuilder> builder,
+            string applicationWebSiteName,
+            string applicationPath)
+        {
+            return CreateServer(builder, applicationWebSiteName, applicationPath, configureServices: null);
+        }
+
+        public static TestServer CreateServer(
+            Action<IApplicationBuilder> builder,
+            string applicationWebSiteName,
+            Action<IServiceCollection> configureServices)
+        {
+            return CreateServer(
+                builder,
+                applicationWebSiteName,
+                applicationPath: null,
+                configureServices: configureServices);
+        }
+
+        private static TestServer CreateServer(
+            Action<IApplicationBuilder> builder,
+            string applicationWebSiteName,
+            string applicationPath,
+            Action<IServiceCollection> configureServices)
+        {
+            return TestServer.Create(
+                builder,
+                services => AddServices(services, applicationWebSiteName, applicationPath, configureServices));
+        }
+
+        private static void AddServices(
             IServiceCollection services,
             string applicationWebSiteName,
             string applicationPath)
         {
+            AddServices(services, applicationWebSiteName, applicationPath, configureServices: null);
+        }
+
+        private static void AddServices(
+            IServiceCollection services,
+            string applicationWebSiteName,
+            string applicationPath,
+            Action<IServiceCollection> configureServices)
+        {
             var provider = CallContextServiceLocator.Locator.ServiceProvider;
             var originalEnvironment = provider.GetRequiredService<IApplicationEnvironment>();
+            applicationPath = applicationPath ?? WebsitesDirectoryPath;
 
             // When an application executes in a regular context, the application base path points to the root
             // directory where the application is located, for example MvcSample.Web. However, when executing
@@ -52,10 +95,15 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             services.AddInstance<IAssemblyProvider>(assemblyProvider);
 
             services.AddInstance<ILoggerFactory>(new LoggerFactory());
+
+            if (configureServices != null)
+            {
+                configureServices(services);
+            }
         }
 
         // Calculate the path relative to the application base path.
-        public static string CalculateApplicationBasePath(
+        private static string CalculateApplicationBasePath(
             IApplicationEnvironment appEnvironment,
             string applicationWebSiteName,
             string websitePath)
@@ -92,7 +140,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         /// </remarks>
         public static IDisposable ReplaceCallContextServiceLocationService(string applicationWebSiteName)
         {
-            return ReplaceCallContextServiceLocationService(applicationWebSiteName, WebsitesDirectoryPath);
+            return ReplaceCallContextServiceLocationService(applicationWebSiteName, applicationPath: null);
         }
 
         /// <summary>

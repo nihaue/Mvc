@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using RazorWebSite;
 using Xunit;
 
@@ -15,6 +13,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     // precompiled and dynamically compiled views.
     public class CompilationOptionsTests
     {
+        private const string SiteName = nameof(RazorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
@@ -32,7 +31,7 @@ This method is only defined in ASPNET50";
 
 This method is only defined in ASPNETCORE50";
 #endif
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -40,11 +39,6 @@ This method is only defined in ASPNETCORE50";
 
             // Assert
             Assert.Equal(expected, body.Trim());
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(RazorWebSite));
         }
     }
 }

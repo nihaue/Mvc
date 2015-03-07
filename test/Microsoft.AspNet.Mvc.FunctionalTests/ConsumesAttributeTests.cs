@@ -8,8 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using ActionConstraintsWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -17,13 +15,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class ConsumesAttributeTests
     {
+        private const string SiteName = nameof(ActionConstraintsWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task NoRequestContentType_SelectsActionWithoutConstraint()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
@@ -42,7 +41,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoRequestContentType_Throws_IfMultipleActionsWithConstraints()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
@@ -66,7 +65,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(
@@ -88,7 +87,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task Selects_Action_BasedOnRequestContentType(string requestContentType)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var input = "{SampleString:\""+requestContentType+"\"}";
@@ -111,7 +110,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ActionLevelAttribute_OveridesClassLevel(string requestContentType)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var input = "{SampleString:\"" + requestContentType + "\"}";
@@ -134,7 +133,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task DerivedClassLevelAttribute_OveridesBaseClassLevel()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var input = "<Product xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -153,11 +152,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedString, product.SampleString);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(ActionConstraintsWebSite));
         }
     }
 }

@@ -7,21 +7,20 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class XmlSerializerInputFormatterTests
     {
+        private const string SiteName = nameof(XmlFormattersWebSite);
         private readonly Action<IApplicationBuilder> _app = new XmlFormattersWebSite.Startup().Configure;
 
         [Fact]
         public async Task CheckIfXmlSerializerInputFormatterIsCalled()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task ThrowsOnInvalidInput_AndAddsToModelState()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var input = "Not a valid xml document";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
@@ -53,11 +52,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync();
             Assert.Contains("dummyObject:There is an error in XML document", data);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(XmlFormattersWebSite));
         }
     }
 }

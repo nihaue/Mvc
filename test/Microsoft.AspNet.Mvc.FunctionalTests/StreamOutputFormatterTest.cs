@@ -5,14 +5,13 @@ using System;
 using System.Threading.Tasks;
 using FormatterWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class StreamOutputFormatterTest
     {
+        private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Theory]
@@ -24,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task StreamOutputFormatter_ReturnsAppropriateContentAndContentType(string actionName, string contentType)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -35,11 +34,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(contentType, response.Content.Headers.ContentType?.ToString());
 
             Assert.Equal("Sample text from a stream", body);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(FormatterWebSite));
         }
     }
 }

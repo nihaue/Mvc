@@ -8,8 +8,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using ErrorPageMiddlewareWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
@@ -19,6 +17,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
     /// </summary>
     public class ErrorPageTests
     {
+        private const string SiteName = nameof(ErrorPageMiddlewareWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
         private readonly Assembly _resourcesAssembly = typeof(ErrorPageTests).GetTypeInfo().Assembly;
 
@@ -32,7 +31,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task CompilationFailuresAreListedByErrorPageMiddleware(string action, string expected)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html");
 
@@ -44,11 +43,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             var content = await response.Content.ReadAsStringAsync();
             Assert.Contains(expected, content);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(ErrorPageMiddlewareWebSite));
         }
     }
 }

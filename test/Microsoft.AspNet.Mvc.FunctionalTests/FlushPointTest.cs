@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
 using Microsoft.Framework.DependencyInjection;
 using RazorWebSite;
 using Xunit;
@@ -15,13 +14,14 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class FlushPointTest
     {
+        private const string SiteName = nameof(RazorWebSite);
         private readonly Action<IApplicationBuilder> _app = new Startup().Configure;
 
         [Fact]
         public async Task FlushPointsAreExecutedForPagesWithLayouts()
         {
             var waitService = new WaitService();
-            var server = TestServer.Create(_app, services => AddServicesWithWaitService(services, waitService));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -44,7 +44,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushPointsAreExecutedForPagesWithoutLayouts()
         {
             var waitService = new WaitService();
-            var server = TestServer.Create(_app, services => AddServicesWithWaitService(services, waitService));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
         {
             var waitService = new WaitService();
-            var server = TestServer.Create(_app, services => AddServicesWithWaitService(services, waitService));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -115,7 +115,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             // Arrange
             var waitService = new WaitService();
-            var server = TestServer.Create(_app, services => AddServicesWithWaitService(services, waitService));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
             // Act
@@ -136,7 +136,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task FlushBeforeCallingLayout()
         {
             var waitService = new WaitService();
-            var server = TestServer.Create(_app, services => AddServicesWithWaitService(services, waitService));
+            var server = TestHelper.CreateServer(_app, SiteName, services => services.AddInstance(waitService));
             var client = server.CreateClient();
 
              var expectedMessage = "A layout page cannot be rendered after 'FlushAsync' has been invoked.";
@@ -164,17 +164,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var buffer = new byte[1024];
             var count = stream.Read(buffer, 0, buffer.Length);
             return Encoding.UTF8.GetString(buffer, 0, count).Trim();
-        }
-
-        private static void AddServicesWithWaitService(IServiceCollection services, WaitService waitService)
-        {
-            AddServices(services);
-            services.AddInstance(waitService);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(RazorWebSite));
         }
     }
 }

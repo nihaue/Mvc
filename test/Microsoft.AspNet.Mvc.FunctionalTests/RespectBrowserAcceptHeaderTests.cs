@@ -8,14 +8,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
 using Microsoft.AspNet.Mvc.Xml;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class RespectBrowserAcceptHeaderTests
     {
+        private const string SiteName = nameof(FormatterWebSite);
         private readonly Action<IApplicationBuilder> _app = new FormatterWebSite.Startup().Configure;
 
         [Theory]
@@ -24,7 +23,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_FirstFormatterInListWritesResponse(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
 
@@ -46,7 +45,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_ProducesAttributeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
             var expectedResponseData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
@@ -71,7 +70,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task AllMediaRangeAcceptHeader_WithContentTypeHeader_ContentTypeIsHonored(string acceptHeader)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("Accept", acceptHeader);
             var requestData = "<RespectBrowserAcceptHeaderController.Employee xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\"" +
@@ -89,11 +88,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal("application/xml; charset=utf-8", response.Content.Headers.ContentType.ToString());
             var responseData = await response.Content.ReadAsStringAsync();
             Assert.Equal(requestData, responseData);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(FormatterWebSite));
         }
     }
 }

@@ -7,14 +7,13 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
 {
     public class LinkGenerationTests
     {
+        private const string SiteName = nameof(BasicWebSite);
         private readonly Action<IApplicationBuilder> _app = new BasicWebSite.Startup().Configure;
 
         // Some tests require comparing the actual response body against an expected response baseline
@@ -29,7 +28,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GeneratedLinksWithActionResults_AreRelativeLinks_WhenSetOnLocationHeader(string url)
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             // Act
@@ -48,7 +47,7 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         public async Task GeneratedLinks_AreNotPunyEncoded_WhenGeneratedOnViews()
         {
             // Arrange
-            var server = TestServer.Create(_app, AddServices);
+            var server = TestHelper.CreateServer(_app, SiteName);
             var client = server.CreateClient();
 
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
@@ -65,11 +64,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
             Assert.Equal(expectedContent, responseContent);
-        }
-
-        private static void AddServices(IServiceCollection services)
-        {
-            TestHelper.AddServices(services, nameof(BasicWebSite));
         }
     }
 }
