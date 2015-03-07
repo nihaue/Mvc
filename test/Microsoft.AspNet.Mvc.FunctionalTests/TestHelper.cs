@@ -157,7 +157,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             string applicationPath)
         {
             var serviceCollection = HostingServices.Create(
-                CallContextServiceLocator.Locator.ServiceProvider,
                 configureHostServices: services => AddServices(services, applicationWebSiteName, applicationPath));
             var provider = serviceCollection.BuildServiceProvider();
 

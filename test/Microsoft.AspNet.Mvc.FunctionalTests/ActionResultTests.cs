@@ -9,8 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using ActionResultsWebSite;
 using Microsoft.AspNet.Builder;
-using Microsoft.AspNet.TestHost;
-using Microsoft.Framework.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNet.Mvc.FunctionalTests
