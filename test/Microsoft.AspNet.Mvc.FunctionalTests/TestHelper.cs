@@ -86,8 +86,6 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
             var assemblyProvider = CreateAssemblyProvider(applicationWebSiteName);
             services.AddInstance<IAssemblyProvider>(assemblyProvider);
 
-            services.AddInstance<ILoggerFactory>(new LoggerFactory());
-
             if (configureServices != null)
             {
                 configureServices(services);
