@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// All writes to the <see cref="Output"/> or <see cref="ViewContext.Writer"/> after calling this method will
         /// be buffered until <see cref="EndTagHelperWritingScope"/> is called.
         /// </remarks>
-        public void StartTagHelperWritingScope(TextWriter writer)
+        public void StartTagHelperWritingScope([NotNull] TextWriter writer)
         {
             // If there isn't a base writer take the ViewContext.Writer
             if (_originalWriter == null)
@@ -252,7 +252,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// <param name="writer">The <see cref="TextWriter"/> to which the
         /// <paramref name="copyableTextWriter"/> is written.</param>
         /// <param name="copyableTextWriter">Contains the data to be written.</param>
-        public void WriteTo(TextWriter writer, ITextWriterCopyable copyableTextWriter)
+        public void WriteTo([NotNull] TextWriter writer, ITextWriterCopyable copyableTextWriter)
         {
             if (copyableTextWriter != null)
             {
@@ -280,7 +280,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
         /// <paramref name="writer"/>.
         /// </remarks>
-        public virtual void WriteTo(TextWriter writer, object value)
+        public virtual void WriteTo([NotNull] TextWriter writer, object value)
         {
             if (value != null && value != HtmlString.Empty)
             {
@@ -322,7 +322,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteTo(TextWriter writer, string value)
+        public virtual void WriteTo([NotNull] TextWriter writer, string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -344,7 +344,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> instance to write to.</param>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void WriteLiteralTo(TextWriter writer, object value)
+        public virtual void WriteLiteralTo([NotNull] TextWriter writer, object value)
         {
             if (value != null)
             {
@@ -356,7 +356,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteLiteralTo(TextWriter writer, string value)
+        public virtual void WriteLiteralTo([NotNull] TextWriter writer, string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -365,17 +365,17 @@ namespace Microsoft.AspNet.Mvc.Razor
         }
 
         public virtual void WriteAttribute(string name,
-                                           PositionTagged<string> prefix,
-                                           PositionTagged<string> suffix,
+                                           [NotNull] PositionTagged<string> prefix,
+                                           [NotNull] PositionTagged<string> suffix,
                                            params AttributeValue[] values)
         {
             WriteAttributeTo(Output, name, prefix, suffix, values);
         }
 
-        public virtual void WriteAttributeTo(TextWriter writer,
+        public virtual void WriteAttributeTo([NotNull] TextWriter writer,
                                              string name,
-                                             PositionTagged<string> prefix,
-                                             PositionTagged<string> suffix,
+                                             [NotNull] PositionTagged<string> prefix,
+                                             [NotNull] PositionTagged<string> suffix,
                                              params AttributeValue[] values)
         {
             var first = true;
@@ -440,7 +440,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     var sourceLength = next.Position - attrVal.Value.Position;
 
                     BeginContext(attrVal.Value.Position, sourceLength, isLiteral: attrVal.Literal);
-                    // The extra branching here is to ensure that we call the Write*To(string) overload whe
+                    // The extra branching here is to ensure that we call the Write*To(string) overload where
                     // possible.
                     if (attrVal.Literal && stringValue != null)
                     {
@@ -479,14 +479,14 @@ namespace Microsoft.AspNet.Mvc.Razor
             return _urlHelper.Content(contentPath);
         }
 
-        private void WritePositionTaggedLiteral(TextWriter writer, string value, int position)
+        private void WritePositionTaggedLiteral([NotNull] TextWriter writer, [NotNull] string value, int position)
         {
             BeginContext(position, value.Length, isLiteral: true);
             WriteLiteralTo(writer, value);
             EndContext();
         }
 
-        private void WritePositionTaggedLiteral(TextWriter writer, PositionTagged<string> value)
+        private void WritePositionTaggedLiteral([NotNull] TextWriter writer, [NotNull] PositionTagged<string> value)
         {
             WritePositionTaggedLiteral(writer, value.Value, value.Position);
         }
@@ -509,7 +509,7 @@ namespace Microsoft.AspNet.Mvc.Razor
         /// </summary>
         /// <param name="name">The name of the section to create.</param>
         /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
-        public void DefineSection(string name, RenderAsyncDelegate section)
+        public void DefineSection([NotNull] string name, [NotNull] RenderAsyncDelegate section)
         {
             if (SectionWriters.ContainsKey(name))
             {
@@ -587,7 +587,7 @@ namespace Microsoft.AspNet.Mvc.Razor
             return await RenderSectionAsyncCore(name, required);
         }
 
-        private async Task<HtmlString> RenderSectionAsyncCore(string sectionName, bool required)
+        private async Task<HtmlString> RenderSectionAsyncCore([NotNull] string sectionName, bool required)
         {
             if (_renderedSections.Contains(sectionName))
             {
